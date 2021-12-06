@@ -138,17 +138,29 @@ fn parse_board(lines: &[&str]) -> BingoBoard {
 
 fn compute_part1(original_bingo_game: &BingoGame) -> u32 {
     let mut bingo_game: BingoGame = original_bingo_game.clone();
+    // draw number
     for draw in original_bingo_game.drawn_numbers.iter() {
         // update boards
         for board in bingo_game.boards.iter_mut() {
-            board.drawn_numbers.insert(*draw);
-            let (row, col) = board.number_to_coordinates[draw];
-            board.drawn_per_row[row] |= 1 << col;
-            board.drawn_per_column[col] |= 1 << row;
+            if let Some(&(row, col)) = board.number_to_coordinates.get(draw) {
+                board.drawn_numbers.insert(*draw);
+                board.drawn_per_row[row] |= 1 << col;
+                board.drawn_per_column[col] |= 1 << row;
+            }
 
-            // check for board complete
+            // continue until one board wins
+            if !board.drawn_per_column.contains(&31) && !board.drawn_per_row.contains(&31) {
+                continue;
+            }
+
+            // when a board wins, compute score: all non drawn numbers added up
+            let sum_numbers_not_drawn: u32 = board
+                .number_to_coordinates
+                .keys()
+                .filter(|n| !board.drawn_numbers.contains(n))
+                .sum();
+            return sum_numbers_not_drawn * draw;
         }
-        println!("{:?}", bingo_game);
     }
     0
 }
@@ -220,10 +232,10 @@ fn part_1_given_example() {
 
     // WHEN
     let bingo_game = parse_input(input.split("\n").collect());
-    let _ = compute_part1(&bingo_game);
+    let r = compute_part1(&bingo_game);
 
     // THEN
-    // assert!(r == 7)
+    assert!(r == 4512)
 }
 
 #[test]
