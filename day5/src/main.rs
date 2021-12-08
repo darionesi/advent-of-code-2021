@@ -26,8 +26,9 @@ fn parse_input(lines: Vec<&str>) -> Vec<Segment> {
             let (x1, y1, x2, y2): (u32, u32, u32, u32);
             text_io::scan!(segment_line.trim().bytes() => "{},{} -> {},{}", x1, y1, x2, y2);
             Segment {
-                start: (x1, y1),
-                end: (x2, y2),
+                // segments should always point away radially from centre
+                start: (x1.min(x2), y1.min(y2)),
+                end: (x2.max(x1), y2.max(y1)),
             }
         })
         .collect()
@@ -55,8 +56,8 @@ fn test_parse_given_example_input() {
     assert!(vents.len() == 10);
     assert!(vents[0].start == (0, 9));
     assert!(vents[0].end == (5, 9));
-    assert!(vents[9].start == (5, 5));
-    assert!(vents[9].end == (8, 2));
+    assert!(vents[9].start == (5, 2));
+    assert!(vents[9].end == (8, 5));
 }
 
 fn is_horizontal_segment(segment: &Segment) -> bool {
@@ -67,10 +68,7 @@ fn is_vertical_segment(segment: &Segment) -> bool {
     segment.start.0 == segment.end.0
 }
 
-fn is_horiz_vert_intersection(
-    horiz_segment: &Segment,
-    vert_segment: &Segment,
-) -> Option<(u32, u32)> {
+fn horiz_vert_intersection(horiz_segment: &Segment, vert_segment: &Segment) -> Option<(u32, u32)> {
     let horiz_left = horiz_segment.start.0.min(horiz_segment.end.0);
     let horiz_right = horiz_segment.end.0.max(horiz_segment.start.0);
     let vert_top = vert_segment.start.1.min(vert_segment.end.1);
@@ -85,26 +83,27 @@ fn is_horiz_vert_intersection(
 }
 
 #[test]
-fn test_same_horiz_vert_intersection() {
+fn test_horiz_vert_intersection() {
     // GIVEN
     let seg_a = Segment {
-        start: (0, 9),
-        end: (5, 9),
+        start: (0, 4),
+        end: (5, 4),
     };
     let seg_b = Segment {
-        start: (0, 7),
-        end: (0, 9),
+        start: (3, 2),
+        end: (3, 6),
     };
 
     // WHEN
-    let intersect = same_direction_overlap(&seg_a, &seg_b);
+    let intersect = horiz_vert_intersection(&seg_a, &seg_b);
 
     // THEN
     assert!(intersect.is_some());
+    assert!(intersect.unwrap() == (3, 4));
 }
 
 fn same_direction_overlap(seg_a: &Segment, seg_b: &Segment) -> Option<Segment> {
-    if is_horizontal_segment(seg_a) {
+    if is_horizontal_segment(seg_a) && seg_a.start.1 == seg_b.start.1 {
         let left_a = seg_a.start.0;
         let left_b = seg_b.start.0;
         let right_a = seg_a.end.0;
@@ -116,7 +115,7 @@ fn same_direction_overlap(seg_a: &Segment, seg_b: &Segment) -> Option<Segment> {
             });
         }
     }
-    if is_vertical_segment(seg_a) {
+    if is_vertical_segment(seg_a) && seg_a.start.0 == seg_b.start.0 {
         let top_a = seg_a.start.1;
         let top_b = seg_b.start.1;
         let bottom_a = seg_a.end.1;
@@ -218,31 +217,23 @@ fn compute_part1(vents: &[Segment]) -> u32 {
             break;
         }
         for other_segment in vents[index + 1..].iter() {
-            println!("Segment {:?} and {:?}", segment, other_segment);
             if is_horizontal_segment(segment) && is_vertical_segment(other_segment) {
-                if let Some(point) = is_horiz_vert_intersection(segment, other_segment) {
-                    println!("Segment {:?} and {:?} intersect", segment, other_segment);
+                if let Some(point) = horiz_vert_intersection(segment, other_segment) {
                     intersection_points.insert(point);
                 }
             } else if is_horizontal_segment(other_segment) && is_vertical_segment(segment) {
-                if let Some(point) = is_horiz_vert_intersection(other_segment, segment) {
-                    println!("Segment {:?} and {:?} intersect", segment, other_segment);
+                if let Some(point) = horiz_vert_intersection(other_segment, segment) {
                     intersection_points.insert(point);
                 }
             } else {
                 let overlap = same_direction_overlap(segment, other_segment);
                 if let Some(overlap) = overlap {
-                    println!(
-                        "Segment {:?} and {:?} overlap {:?}",
-                        segment, other_segment, overlap
-                    );
                     let overlap_points = overlap_points_from_segment(&overlap);
                     for n in overlap_points.iter() {
                         intersection_points.insert(*n);
                     }
                 }
             }
-            println!("intersection_points.len() is {}", intersection_points.len());
         }
     }
     intersection_points.len() as u32
@@ -271,7 +262,6 @@ fn part_1_given_example() {
     let r = compute_part1(&vents);
 
     // THEN
-    println!("r={}", r);
     assert!(r == 5)
 }
 
