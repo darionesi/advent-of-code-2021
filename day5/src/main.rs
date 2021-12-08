@@ -26,9 +26,8 @@ fn parse_input(lines: Vec<&str>) -> Vec<Segment> {
             let (x1, y1, x2, y2): (u32, u32, u32, u32);
             text_io::scan!(segment_line.trim().bytes() => "{},{} -> {},{}", x1, y1, x2, y2);
             Segment {
-                // segments should always point away radially from centre
-                start: (x1.min(x2), y1.min(y2)),
-                end: (x2.max(x1), y2.max(y1)),
+                start: (x1, y1),
+                end: (x2, y2),
             }
         })
         .collect()
@@ -56,8 +55,8 @@ fn test_parse_given_example_input() {
     assert!(vents.len() == 10);
     assert!(vents[0].start == (0, 9));
     assert!(vents[0].end == (5, 9));
-    assert!(vents[9].start == (5, 2));
-    assert!(vents[9].end == (8, 5));
+    assert!(vents[9].start == (5, 5));
+    assert!(vents[9].end == (8, 2));
 }
 
 fn is_horizontal_segment(segment: &Segment) -> bool {
@@ -104,10 +103,10 @@ fn test_horiz_vert_intersection() {
 
 fn same_direction_overlap(seg_a: &Segment, seg_b: &Segment) -> Option<Segment> {
     if is_horizontal_segment(seg_a) && seg_a.start.1 == seg_b.start.1 {
-        let left_a = seg_a.start.0;
-        let left_b = seg_b.start.0;
-        let right_a = seg_a.end.0;
-        let right_b = seg_b.end.0;
+        let left_a = seg_a.start.0.min(seg_a.end.0);
+        let left_b = seg_b.start.0.min(seg_b.end.0);
+        let right_a = seg_a.end.0.max(seg_a.start.0);
+        let right_b = seg_b.end.0.max(seg_b.start.0);
         if right_a.min(right_b) >= left_a.max(left_b) {
             return Some(Segment {
                 start: (left_a.max(left_b), seg_a.start.1),
@@ -116,10 +115,10 @@ fn same_direction_overlap(seg_a: &Segment, seg_b: &Segment) -> Option<Segment> {
         }
     }
     if is_vertical_segment(seg_a) && seg_a.start.0 == seg_b.start.0 {
-        let top_a = seg_a.start.1;
-        let top_b = seg_b.start.1;
-        let bottom_a = seg_a.end.1;
-        let bottom_b = seg_b.end.1;
+        let top_a = seg_a.start.1.min(seg_a.end.1);
+        let top_b = seg_b.start.1.min(seg_b.end.1);
+        let bottom_a = seg_a.end.1.max(seg_a.end.1);
+        let bottom_b = seg_b.end.1.max(seg_b.end.1);
         if bottom_a.min(bottom_b) >= top_a.max(top_b) {
             return Some(Segment {
                 start: (seg_a.start.0, top_a.max(top_b)),
@@ -149,8 +148,8 @@ fn overlap_points_from_segment(segment: &Segment) -> Vec<(u32, u32)> {
 fn test_same_direction_overlap() {
     // GIVEN
     let seg_a = Segment {
-        start: (0, 9),
-        end: (5, 9),
+        start: (5, 9),
+        end: (0, 9),
     };
     let seg_b = Segment {
         start: (0, 9),
