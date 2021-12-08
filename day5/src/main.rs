@@ -1,8 +1,4 @@
-use std::{
-    collections::{HashMap, HashSet},
-    fmt::Debug,
-    iter::{self, Enumerate},
-};
+use std::{collections::HashSet, fmt::Debug};
 
 fn main() -> std::result::Result<(), std::io::Error> {
     let lines = std::fs::read_to_string("input.txt")?;
@@ -211,10 +207,7 @@ fn compute_part1(vents: &[Segment]) -> u32 {
         .collect();
 
     let mut intersection_points = HashSet::new();
-    for (index, segment) in vents.iter().enumerate() {
-        if index == vents.len() - 1 {
-            break;
-        }
+    for (index, segment) in vents[..vents.len() - 1].iter().enumerate() {
         for other_segment in vents[index + 1..].iter() {
             if is_horizontal_segment(segment) && is_vertical_segment(other_segment) {
                 if let Some(point) = horiz_vert_intersection(segment, other_segment) {
