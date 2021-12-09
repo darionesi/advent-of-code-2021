@@ -27,9 +27,8 @@ fn test_parse_given_example_input() {
     assert!(ages == vec![3, 4, 3, 1, 2]);
 }
 
-fn compute_part1(ages: &[u32]) -> u32 {
-    let mut ages_count = [0u32; 9];
-    let days = 80u32;
+fn grow_lanternfish(ages: &[u32], days: u32) -> u64 {
+    let mut ages_count = [0u64; 9];
     for &fish in ages.iter() {
         ages_count[fish as usize] += 1;
     }
@@ -48,8 +47,24 @@ fn compute_part1(ages: &[u32]) -> u32 {
     ages_count.iter().sum()
 }
 
-fn compute_part2(ages: &[u32]) -> u32 {
-    0
+fn compute_part1(ages: &[u32]) -> u64 {
+    grow_lanternfish(ages, 80)
+}
+
+fn compute_part2(ages: &[u32]) -> u64 {
+    grow_lanternfish(ages, 256)
+}
+
+#[test]
+fn test_grow_lanternfish() {
+    // GIVEN
+    let ages = vec![3u32, 4, 3, 1, 2];
+
+    // WHEN
+    let r = grow_lanternfish(&ages, 18);
+
+    // THEN
+    assert!(r == 26);
 }
 
 #[test]
@@ -68,7 +83,12 @@ fn part_1_given_example() {
 #[test]
 fn part_2_given_example() {
     // GIVEN
+    let input = "3,4,3,1,2";
+
     // WHEN
+    let ages = parse_input(input);
+    let r = compute_part2(&ages);
+
     // THEN
-    // assert!(r == )
+    assert!(r == 26984457539);
 }
