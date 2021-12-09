@@ -231,7 +231,7 @@ fn compute_part1(vents: &[Segment]) -> u32 {
     intersection_points.len() as u32
 }
 
-fn compute_part2(vents: &[Segment]) -> u32 {
+fn compute_part2(_vents: &[Segment]) -> u32 {
     0
 }
 

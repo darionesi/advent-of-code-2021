@@ -25,9 +25,9 @@ fn compute_part1(input: &Vec<u32>, bits_available: usize) -> u32 {
     for bit_index in 0..bits_available {
         let occurrences_of_1: u32 = input.iter().map(|n| (n >> bit_index) & 1).sum();
         if occurrences_of_1 > (input.len() as u32 / 2) {
-            gamma_rate += (1 << bit_index);
+            gamma_rate += 1 << bit_index;
         } else {
-            epsilon_rate += (1 << bit_index);
+            epsilon_rate += 1 << bit_index;
         }
     }
     gamma_rate * epsilon_rate
@@ -41,12 +41,13 @@ fn compute_part2(input: &Vec<u32>, bits_available: usize) -> u32 {
             .iter()
             .map(|n| (n >> bit_index) & 1)
             .sum();
-        let mask = (1 << bit_index);
-        let expected = if occurrences_of_1 >= (possible_oxygen_gen_rating.len() as u32 - occurrences_of_1) {
-            mask
-        } else {
-            0
-        };
+        let mask = 1 << bit_index;
+        let expected =
+            if occurrences_of_1 >= (possible_oxygen_gen_rating.len() as u32 - occurrences_of_1) {
+                mask
+            } else {
+                0
+            };
         possible_oxygen_gen_rating = possible_oxygen_gen_rating
             .into_iter()
             .filter(|n| (n & mask) == expected)
@@ -62,12 +63,13 @@ fn compute_part2(input: &Vec<u32>, bits_available: usize) -> u32 {
             .iter()
             .map(|n| (n >> bit_index) & 1)
             .sum();
-        let mask = (1 << bit_index);
-        let expected = if occurrences_of_1 >= (possible_co2_scrubber_rating.len() as u32 - occurrences_of_1) {
-            0
-        } else {
-            mask
-        };
+        let mask = 1 << bit_index;
+        let expected =
+            if occurrences_of_1 >= (possible_co2_scrubber_rating.len() as u32 - occurrences_of_1) {
+                0
+            } else {
+                mask
+            };
         possible_co2_scrubber_rating = possible_co2_scrubber_rating
             .into_iter()
             .filter(|n| (n & mask) == expected)
