@@ -38,7 +38,19 @@ fn compute_part1(positions: &[u32]) -> u32 {
 }
 
 fn compute_part2(positions: &[u32]) -> u32 {
-    0
+    // TODO add math docs to show calculation
+    let x_min_left =
+        f32::floor(positions.iter().sum::<u32>() as f32 / positions.len() as f32) as u32;
+    let x_min_right =
+        f32::ceil(positions.iter().sum::<u32>() as f32 / positions.len() as f32) as u32;
+    let (min_1, min_2) = positions.iter().fold((0, 0), |acc, &k| {
+        let distance_min_left = (k as i32 - x_min_left as i32).abs() as u32;
+        let distance_min_left = distance_min_left * (distance_min_left + 1) / 2;
+        let distance_min_right = (k as i32 - x_min_right as i32).abs() as u32;
+        let distance_min_right = distance_min_right * (distance_min_right + 1) / 2;
+        (acc.0 + distance_min_left, acc.1 + distance_min_right)
+    });
+    min_1.min(min_2)
 }
 
 #[test]
@@ -54,4 +66,13 @@ fn part_1_given_example() {
 }
 
 #[test]
-fn part_2_given_example() {}
+fn part_2_given_example() {
+    let input = "16,1,2,0,4,2,7,1,2,14";
+
+    // WHEN
+    let positions = parse_input(input);
+    let r = compute_part2(&positions);
+
+    // THEN
+    assert!(r == 168);
+}
