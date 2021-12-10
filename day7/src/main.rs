@@ -50,7 +50,7 @@ fn part_1_given_example() {
     let r = compute_part1(&positions);
 
     // THEN
-    assert!(r == 2);
+    assert!(r == 37);
 }
 
 #[test]
